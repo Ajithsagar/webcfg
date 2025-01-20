@@ -247,7 +247,7 @@ WEBCFG_STATUS webcfg_http_request(char **configData, int r_count, int status, lo
 		{
 			//loadInitURLFromFile(&webConfigURL);
 			Get_Webconfig_URL(configURL);
-			WebcfgDebug("primary sync url fetched is %s\n", configURL);
+			WebcfgInfo("primary sync url fetched is %s\n", configURL);
 		}
 		else
 		{
@@ -643,11 +643,11 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 	if(transaction_id !=NULL)
 	{
 		strncpy(g_transID, transaction_id, sizeof(g_transID)-1);
-		WebcfgDebug("g_transID is %s\n", g_transID);
+		WebcfgInfo("g_transID is %s\n", g_transID);
 		WEBCFG_FREE(transaction_id);
 	}
         
-	WebcfgDebug("Add mp entries to tmp list\n");
+	WebcfgInfo("Add mp entries to tmp list\n");
 	addStatus = addToTmpList();
 	if(addStatus == WEBCFG_SUCCESS)
 	{
@@ -659,7 +659,7 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 		WebcfgError("addToTmpList failed\n");
 		uint32_t version = strtoul(g_ETAG,NULL,0);
 		err = getStatusErrorCodeAndMessage(ADD_TO_CACHE_LIST_FAILURE, &errmsg);
-		WebcfgDebug("The error_details is %s and err_code is %d\n", errmsg, err);
+		WebcfgInfo("The error_details is %s and err_code is %d\n", errmsg, err);
 		addWebConfgNotifyMsg("root", version, "failed", errmsg, get_global_transID() ,0, "status", err, NULL, 200);
 		WEBCFG_FREE(errmsg);
 		err = 0;
@@ -907,7 +907,7 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 						if((ccspStatus == CCSP_CRASH_STATUS_CODE) || (ccspStatus == 204) || (ccspStatus == 191) || (ccspStatus == 193) || (ccspStatus == 190))
 						{
 							subdocStatus = isSubDocSupported(mp->name_space);
-							WebcfgDebug("ccspStatus is %d\n", ccspStatus);
+							WebcfgInfo("ccspStatus is %d\n", ccspStatus);
 							if(ccspStatus == 204 && subdocStatus != WEBCFG_SUCCESS)
 							{
 								snprintf(result,MAX_VALUE_LEN,"doc_unsupported:%s", errDetails);
@@ -919,7 +919,7 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 								set_doc_fail(1);
 
 								updateFailureTimeStamp(subdoc_node, mp->name_space, expiry_time);
-								WebcfgDebug("The retry_timer is %d and timeout generated is %lld\n", get_retry_timer(), expiry_time);
+								WebcfgInfo("The retry_timer is %d and timeout generated is %lld\n", get_retry_timer(), expiry_time);
 								//To get the exact time diff for retry from present time.
 								updateRetryTimeDiff(expiry_time);
 								snprintf(result,MAX_VALUE_LEN,"failed_retrying:%s", errDetails);
@@ -947,12 +947,12 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 								break;
 							}
 
-							WebcfgDebug("the retry flag value is %d\n", get_doc_fail());
+							WebcfgInfo("the retry flag value is %d\n", get_doc_fail());
 						}
 						else
 						{
 							snprintf(result,MAX_VALUE_LEN,"doc_rejected:%s", errDetails);
-							WebcfgDebug("The result is %s\n",result);
+							WebcfgInfo("The result is %s\n",result);
 							updateTmpList(subdoc_node, mp->name_space, mp->etag, "failed", result, ccspStatus, 0, 0);
 							if(subdoc_node !=NULL && subdoc_node->cloud_trans_id !=NULL)
 							{
@@ -966,7 +966,7 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 				{
 					WebcfgError("Update retry count failed for doc %s\n", mp->name_space);
 					err = getStatusErrorCodeAndMessage(FAILED_TO_SET_BLOB, &errmsg);
-					WebcfgDebug("The error_details is %s and err_code is %d\n", errmsg, err);
+					WebcfgInfo("The error_details is %s and err_code is %d\n", errmsg, err);
 					updateTmpList(subdoc_node, mp->name_space, mp->etag, "failed", errmsg, err, 0, 0);
 					if(subdoc_node !=NULL && subdoc_node->cloud_trans_id !=NULL)
 					{
@@ -983,7 +983,7 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 			else
 			{
 				err = getStatusErrorCodeAndMessage(BLOB_PARAM_VALIDATION_FAILURE, &errmsg);
-				WebcfgDebug("The error_details is %s and err_code is %d\n", errmsg, err);
+				WebcfgInfo("The error_details is %s and err_code is %d\n", errmsg, err);
 				updateTmpList(subdoc_node, mp->name_space, mp->etag, "failed", errmsg, err, 0, 0);
 				addWebConfgNotifyMsg(mp->name_space, mp->etag, "failed", errmsg, get_global_transID() ,0, "status", err, NULL, 200);
 				WEBCFG_FREE(errmsg);
@@ -1007,7 +1007,7 @@ WEBCFG_STATUS processMsgpackSubdoc(char *transaction_id)
 		}
 		mp = mp->next;
 	}
-	WebcfgDebug("The current_doc_count is %d\n",current_doc_count);
+	WebcfgInfo("The current_doc_count is %d\n",current_doc_count);
 
 #ifdef FEATURE_SUPPORT_AKER
 	//Apply aker doc at the end when all other docs are processed.
@@ -2387,7 +2387,7 @@ WEBCFG_STATUS checkRootDelete()
 	int docSuccess =0;
 	while (NULL != temp)
 	{
-		WebcfgDebug("Root check ====> temp->name %s\n", temp->name);
+		WebcfgInfo("Root check ====> temp->name %s\n", temp->name);
 		if( strcmp("root", temp->name) != 0)
 		{
 			if(strcmp("success", temp->status) == 0)
@@ -2409,7 +2409,7 @@ WEBCFG_STATUS checkRootDelete()
 	}
 	else
 	{
-		WebcfgDebug("Tmp list root doc delete is not required\n");
+		WebcfgInfo("Tmp list root doc delete is not required\n");
 	}
 	return WEBCFG_FAILURE;
 }
@@ -2422,7 +2422,7 @@ WEBCFG_STATUS checkRootUpdate()
 	int docSuccess =0;
 	while (NULL != temp)
 	{
-		WebcfgDebug("Root check ====> temp->name %s\n", temp->name);
+		WebcfgInfo("Root check ====> temp->name %s\n", temp->name);
 		if((temp->error_code == 204 && (temp->error_details != NULL && strstr(temp->error_details, "doc_unsupported") != NULL)) || (temp->isSupplementarySync == 1)) //skip supplementary docs
 		{
 			if(temp->isSupplementarySync)
@@ -2433,7 +2433,7 @@ WEBCFG_STATUS checkRootUpdate()
 			{
 				WebcfgDebug("Skipping unsupported sub doc %s\n",temp->name);
 			}
-			WebcfgDebug("Error details: %s\n",temp->error_details);
+			WebcfgInfo("Error details: %s\n",temp->error_details);
 		}
 		else if( strcmp("root", temp->name) != 0)
 		{
@@ -2449,7 +2449,7 @@ WEBCFG_STATUS checkRootUpdate()
 		}
 		else
 		{
-			WebcfgDebug("docs not found in templist\n");
+			WebcfgInfo("docs not found in templist\n");
 		}	
 		temp= temp->next;
 	}
@@ -2522,11 +2522,11 @@ void failedDocsRetry()
 				WebcfgInfo("Retrying for subdoc %s error_code %lu\n", temp->name, (long)temp->error_code);
 				if(retryMultipartSubdoc(temp, temp->name) == WEBCFG_SUCCESS)
 				{
-					WebcfgDebug("The subdoc %s set is success\n", temp->name);
+					WebcfgInfo("The subdoc %s set is success\n", temp->name);
 				}
 				else
 				{
-					WebcfgDebug("The subdoc %s set is failed\n", temp->name);
+					WebcfgInfo("The subdoc %s set is failed\n", temp->name);
 				}
 			}
 			else
@@ -2535,13 +2535,13 @@ void failedDocsRetry()
 
 				//To get the exact time diff for retry from present time do the below
 				time_diff = updateRetryTimeDiff(temp->retry_timestamp);
-				WebcfgDebug("The docname is %s and diff is %d retry time stamp is %s\n", temp->name, time_diff, printTime(temp->retry_timestamp));
+				WebcfgInfo("The docname is %s and diff is %d retry time stamp is %s\n", temp->name, time_diff, printTime(temp->retry_timestamp));
 				set_doc_fail(1);
 			}
 		}
 		else
 		{
-			WebcfgDebug("Retry skipped for %s (%s)\n",temp->name,temp->error_details);
+			WebcfgInfo("Retry skipped for %s (%s)\n",temp->name,temp->error_details);
 		}
 		temp= temp->next;
 	}
